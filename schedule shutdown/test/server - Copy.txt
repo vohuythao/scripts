@@ -1,0 +1,17 @@
+{
+"hosts":[
+{
+"host":"10.9.1.185",
+"user":"root",
+"password":"01000000d08c9ddf0115d1118c7a00c04fc297eb01000000734ece9db3b4294cab2049faf6c3ddd20000000002000000000003660000c00000001000000090cd0d72d16a9478a27aabf9c0c73c720000000004800000a0000000100000002c78ef83953b2f588e0f38eebb6e5d211800000047ce32604a825798d2a006fdfe03d3e89a0f38d656161e33140000006147a8dbff316a5bd1b8fa78d6727079b5cd1881",
+"simple":[
+	{"server":"AD1"},
+	{"server":"TERM1"}
+	 ],
+"complex":[
+	{"server":"server2","memory":3,"cpu":2},
+	{"server":"server3","memory":3,"cpu":2}
+	  ]
+}
+	]
+}

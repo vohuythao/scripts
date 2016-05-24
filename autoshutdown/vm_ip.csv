@@ -1,0 +1,6 @@
+"Name","PowerState","ip","toolstatus","toolversion"
+"Vinh-Sandbox2","PoweredOn","10.9.1.138","guestToolsCurrent","9231"
+"Vinhbox-SP02","PoweredOn","10.9.1.196","guestToolsCurrent","9231"
+"Vinhbox-DBS01","PoweredOn","10.9.1.186","guestToolsCurrent","9231"
+"Vinhbox-SP01","PoweredOff",,"guestToolsCurrent","9231"
+"Vinhbox-AD02","PoweredOff",,"guestToolsCurrent","9231"

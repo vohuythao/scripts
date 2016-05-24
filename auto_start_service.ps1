@@ -1,0 +1,2 @@
+﻿#Get services that should be started (StartMode = Auto) but are stopped (State = Stopped), then start these services 
+Get-WmiObject -class Win32_Service -computername . -namespace "root\CIMV2" | Where-Object {$_.StartMode -match "auto" -and $_.state -match "stopped"} | Start-Service

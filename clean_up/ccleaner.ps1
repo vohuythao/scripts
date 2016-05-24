@@ -1,0 +1,1 @@
+﻿Invoke-VMScript -VM SYDTS003 -GuestUser .\Administrator -GuestPassword @dm1nP@ssw0rd -ScriptText "Start-Process \\data1\Software\CCleaner\CCleaner64.exe /AUTO -Verb RunAs" -ScriptType Powershell

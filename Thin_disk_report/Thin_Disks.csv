@@ -1,0 +1,75 @@
+"Name","Provisioned","Total","Used","VMDKs","VMDKsize","DiskUsed","Thin"
+"SYDAPP002","88.13","80","58.31","[datastore2] SYDAPP002/SYDAPP002.vmdk
+[datastore2] SYDAPP002/SYDAPP002_1.vmdk
+","40
+40
+","5.74
+22.88
+","True
+True
+"
+"SYDAPP003","88.13","80","16.26","[datastore2] SYDAPP003/SYDAPP003.vmdk
+[datastore2] SYDAPP003/SYDAPP003_1.vmdk
+","40
+40
+","2.98
+20.41
+","True
+True
+"
+"SYDDBS004","608.13","600","535.30","[datastore2] SYDDBS004/SYDDBS004.vmdk
+[datastore2] SYDDBS004/SYDDBS004_1.vmdk
+[datastore2] SYDDBS004/SYDDBS004_2.vmdk
+[datastore2] SYDDBS004/SYDDBS004_3.vmdk
+","100
+200
+200
+100
+","187.29
+178.92
+80.27
+52.74
+","True
+True
+True
+True
+"
+"SYDDMZWEB001","183.86","140","39.90","[datastore1] SYDDMZWEB001/SYDDMZWEB001-000001.vmdk
+[datastore1] SYDDMZWEB001/SYDDMZWEB001_1-000001.vmdk
+","70
+70
+","2.69
+26.28
+","True
+True
+"
+"SYDIIS001","143.53","90","45.53","[datastore2] SYDIIS001/SYDIIS001-000001.vmdk
+[datastore2] SYDIIS001/SYDIIS001_1-000001.vmdk
+","40
+50
+","18.85
+25.43
+","True
+True
+"
+"sydpsnweb001","374.23","370","318.48","[datastore1] sydpsnweb001/sydpsnweb001.vmdk
+[datastore1] sydpsnweb001/sydpsnweb001_1.vmdk
+","70
+300
+","0
+","True
+True
+"
+"SYDSP001","354.12","350","49.34","[datastore1] SYDSP001/SYDSP001.vmdk
+[datastore1] SYDSP001/SYDSP001_1.vmdk
+[datastore1] SYDSP001/SYDSP001_2.vmdk
+","150
+100
+100
+","19.15
+0.47
+26.85
+","True
+True
+True
+"
