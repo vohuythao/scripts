@@ -8,7 +8,7 @@
             "metadata": {
                 "description": "Name of the demo environment. Will be used as prefix for resources."
             },
-            "maxLength": 12
+            "maxLength": 18
         },
         "appServicePlanSku": {
             "type": "string",
