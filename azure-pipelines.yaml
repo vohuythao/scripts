@@ -1,0 +1,180 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+# https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md
+
+trigger:
+  batch: true
+  tags:
+    include:
+      - production-*.*
+pool:
+  vmImage: 'macOS-13'
+
+variables:
+  YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
+  POD_CACHE_FOLDER: $(Pipeline.Workspace)/.pod
+  GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
+
+jobs:
+  - job:
+    variables:
+      - group: AppConnect
+    displayName: ChatWow Mobile Production
+    timeoutInMinutes: 200
+
+    steps:
+      - task: InstallAppleCertificate@2
+        displayName: 'Install an Apple certificate'
+        inputs:
+          certSecureFile: Certificates.p12
+          certPwd: $(certPwd)
+
+      - task: Bash@3
+        displayName: Get app version from package.json
+        inputs:
+          targetType: 'inline'
+          script: |
+            appversion=$(cat package.json | grep "version")
+            echo "##vso[task.setvariable variable=appversion]$appversion"
+
+      - task: InstallAppleProvisioningProfile@1
+        displayName: 'Install an Apple provisioning profile'
+        inputs:
+          provisioningProfileLocation: 'sourceRepository'
+          provProfileSourceRepository: './ios/ChatWowProductionRelease.mobileprovision'
+
+      - task: NodeTool@0
+        displayName: 'Use Node 16.14.2'
+        inputs:
+          versionSpec: 16.14.2
+
+      - task: Cache@2
+        inputs:
+          key: 'yarn | "$(Agent.OS)" | yarn.lock'
+          restoreKeys: |
+            yarn | "$(Agent.OS)"
+            yarn
+          path: $(YARN_CACHE_FOLDER)
+          cacheHitVar: YARN_RESTORED
+        displayName: Cache Yarn packages
+
+      - task: Yarn@3
+        inputs:
+          projectDirectory: '.'
+          arguments: 'install'
+
+      - task: Cache@2
+        inputs:
+          key: 'gradle | "$(Agent.OS)"'
+          restoreKeys: gradle
+          path: $(GRADLE_USER_HOME)
+        displayName: Gradle build cache
+
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
+      - script: |
+          cd android
+          ./gradlew bundleProductionRelease
+        displayName: 'Build Production Android'
+
+      - script: |
+          awk -v RS= '/\n/ { print; exit }' RELEASENOTE.md > CHANGELOG.md
+        displayName: 'Generate change log file'
+
+      - task: CopyFiles@2
+        displayName: 'Copy AAB to: $(build.artifactproductiondirectory)'
+        inputs:
+          SourceFolder: '$(system.defaultworkingdirectory)'
+          Contents: 'android/app/build/outputs/bundle/productionRelease/app-production-release.aab'
+          TargetFolder: '$(build.artifactproductiondirectory)'
+
+      - task: CopyFiles@2
+        displayName: 'Copy Release Notes to: $(build.artifactproductiondirectory)'
+        inputs:
+          SourceFolder: '$(system.defaultworkingdirectory)'
+          Contents: 'CHANGELOG.md'
+          TargetFolder: '$(build.artifactproductiondirectory)'
+        condition: succeededOrFailed()
+
+      - task: GooglePlayRelease@4
+        displayName: 'Deploy ChatWow Production Android to Google Play'
+        inputs:
+          serviceConnection: 'TVAntenna Google Play'
+          applicationId: 'com.chatwow.app'
+          action: 'SingleBundle'
+          bundleFile: 'android/app/build/outputs/bundle/productionRelease/app-production-release.aab'
+          track: 'internal'
+
+      - task: SendGridEmail@2
+        inputs:
+          SendGridApiKey: '$(SendGridAPIKey)'
+          FromAddress: 'devopsdfo@dfogpc.com'
+          ToAddresses: 'truong.nguyen@dfogpc.com, phuong.nguyen@dfogpc.com, phuongtknguyen2507@gmail.com'
+          Subject: 'ChatWow $(appversion) Android Internal Test'
+          emailBodyFormat: 'InLine'
+          EmailBody: |
+            ChatWow $(appversion) Android,
+            Please noticed that Azure DevOps Pipeline has upload the AAB file $(appversion) to Google Play.
+            Click link https://play.google.com/apps/internaltest/4701478457713241921
+            $(Build.BuildNumber)
+            $(Build.DefinitionName) 
+            $(Build.BuildId)
+
+      - task: Cache@2
+        inputs:
+          key: 'pods | "$(Agent.OS)" | ./ios/Podfile.lock'
+          path: './ios/Pods'
+          cacheHitVar: 'PODS_CACHE_RESTORED'
+        displayName: Cache Pods packages
+
+      - task: CocoaPods@0
+        displayName: 'pod install'
+        condition: ne(variables.PODS_CACHE_RESTORED, 'true')
+        inputs:
+          workingDirectory: ios/
+
+      - task: Xcode@5
+        displayName: 'Xcode build'
+        inputs:
+          sdk: iphoneos
+          configuration: ProductionRelease
+          xcWorkspacePath: ios/chatwow.xcworkspace
+          scheme: Production
+          xcodeVersion: specifyPath
+          xcodeDeveloperDir: '/Applications/Xcode_14.3.1.app'
+          packageApp: true
+          exportOptions: plist
+          exportOptionsPlist: ios/ProductionExport.plist
+          exportArgs: '-parallelizeTargets'
+          signingOption: default
+          useXcpretty: false
+
+      - task: CopyFiles@2
+        displayName: 'Copy IPA Files to: $(build.artifactproductiondirectory)'
+        inputs:
+          SourceFolder: '$(system.defaultworkingdirectory)'
+          Contents: '**/*.ipa'
+          TargetFolder: '$(build.artifactproductiondirectory)'
+        condition: succeededOrFailed()
+
+      - task: AppStoreRelease@1
+        displayName: 'Deploy ChatWow Production iOS to App Store TestFlight'
+        inputs:
+          fastlaneToolsVersion: 'SpecificVersion'
+          fastlaneToolsSpecificVersion: '2.216.0'
+          authType: 'ApiKey'
+          apiKeyId: '$(KeyID)'
+          apiKeyIssuerId: '$(IssuerId)'
+          apitoken: '$(APPSTORECONNECTAPIKEYCONTENTBASE64)'
+          releaseTrack: 'TestFlight'
+          appIdentifier: 'com.chatwow.app'
+          appType: 'iOS'
+          ipaPath: '/Users/runner/work/1/s/output/$(SDK)/$(Configuration)/chatwow.ipa'
+          shouldSkipWaitingForProcessing: true
+          shouldSkipSubmission: true
